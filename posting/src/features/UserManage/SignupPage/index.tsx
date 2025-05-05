@@ -12,16 +12,13 @@ import {
   passValidation,
   phoneValidation,
 } from "@/util/validation"; // 유효성 검사
+import clsx from "clsx";
+import { useRouter } from "next/router";
 
 const SignupPage = () => {
-  //   const [email, setEmail] = useState("");
-  //   const [password, setPassword] = useState("");
-  //   const [passwordCheck, setPasswordCheck] = useState("");
-  //   const [nickname, setNickname] = useState("");
-  //   const [name, setName] = useState("");
-  //   const [phone, setPhone] = useState("");
+  const router = useRouter();
 
-  // 에러 메세지
+  // 에러 메세지 상태
   const [emailError, setEmailError] = useState("");
   const [passError, setPassError] = useState("");
   const [passCheckError, setPassCheckError] = useState("");
@@ -29,34 +26,89 @@ const SignupPage = () => {
   const [nameError, setNameError] = useState("");
   const [phoneError, setPhoneError] = useState("");
 
-  //   const validate = (values: signForm) => {
-  //     const errors: any = {};
-  //     // 아이디(이메일)
-  //     if (!values.email) {
-  //       errors.email = "이메일을 입력해주세요.";
-  //     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) {
-  //       errors.email = "유효하지 않은 이메일 형식입니다.";
-  //     }
+  // 유효성 검사 boolean 상태
+  const [isEmail, setIsEmail] = useState(false);
+  const [isPassword, setIsPassword] = useState(false);
+  const [isPasswordCheck, setIsPasswordCheck] = useState(false);
+  const [isNickname, setIsNickname] = useState(false);
+  const [isname, setIsName] = useState(false);
+  const [isPhone, setIsPhone] = useState(false);
 
-  //     // 비밀번호
-  //     const pwRegex =
-  //       /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*()])[a-zA-Z\d!@#$%^&*()]{8,16}$/;
-  //     if (!values.password) {
-  //       errors.password = "비밀번호를 입력해주세요.";
-  //     } else if (!pwRegex.test(values.password)) {
-  //       errors.password =
-  //         "비밀번호는 8자 이상 16자이하의 대소문자, 숫자, 특수문자가 포함되어야 합니다.";
-  //     }
+  // 중복 상태 메세지
+  const [emailDuplicate, setEmailDuplicate] = useState("");
+  const [nicknameDuplicate, setNicknameDuplicate] = useState("");
+  const [phoneDuplicate, setPhoneDuplicate] = useState("");
 
-  //     // 비밀번호 확인
-  //     if (!values.passwordCheck) {
-  //       errors.passwordCheck = "비밀번호를 확인해주세요.";
-  //     } else if (values.password !== values.passwordCheck) {
-  //       errors.passwordCheck = "비밀번호가 일치하지 않습니다.";
-  //     }
+  //   중복확인 - 이메일
+  const duplicateCheck = async (email: string) => {
+    try {
+      if (!email.trim()) {
+        setEmailDuplicate("이메일을 입력해주세요."); // ✅ 메시지 출력
+        return;
+      }
 
-  //     return errors;
-  //   };
+      //   if (emailError) return;
+
+      const res = await api.post(`/user/check/email`, { email });
+
+      if (res.data.exist) {
+        console.log(res, "front");
+        // setEmailError("이미 사용된 이메일입니다.");
+        setEmailDuplicate("이미 사용된 이메일입니다.");
+      } else {
+        // setEmailError("사용 가능한 이메일입니다.");
+        setEmailDuplicate("사용 가능한 이메일입니다.");
+      }
+    } catch (err) {
+      console.error(err, "중복확인 실패");
+    }
+  };
+
+  //   중복확인 - 닉네임
+  const duplicateCheck2 = async (nickname: string) => {
+    try {
+      if (!nickname.trim()) {
+        setNicknameDuplicate("닉네임을 입력해주세요."); // ✅ 메시지 출력
+        return;
+      }
+
+      const res = await api.post(`/user/check/nickname`, { nickname });
+      if (res.data.exist) {
+        console.log(res, "front");
+        setNicknameDuplicate("이미 사용된 닉네임입니다.");
+      } else {
+        setNicknameDuplicate("사용 가능한 닉네임입니다.");
+      }
+    } catch (err) {
+      console.error(err, "중복확인 실패");
+    }
+  };
+
+  //   중복확인 - 휴대폰 번호
+  const duplicateCheck3 = async (phone: string) => {
+    try {
+      if (!phone.trim()) {
+        setPhoneDuplicate("번호를 입력해주세요."); // ✅ 메시지 출력
+        return;
+      }
+      console.log(phone, "hooooooo");
+
+      const res = await api.post(`/user/check/phone`, { phone });
+
+      if (res.data.exist) {
+        console.log(res, "front");
+        setPhoneDuplicate("이미 사용된 번호입니다.");
+      } else {
+        setPhoneDuplicate("사용 가능한 번호입니다.");
+      }
+    } catch (err) {
+      console.error(err, "중복확인 실패");
+    }
+  };
+
+  //   비활성화 / 활성화 상태
+  const isValid =
+    isEmail && isPassword && isPasswordCheck && isNickname && isname && isPhone; // 모든 form의 유효성이 false 일 때
 
   const formik = useFormik({
     initialValues: {
@@ -69,25 +121,6 @@ const SignupPage = () => {
     },
 
     // validate,
-    // validate: (values) => {
-    //   const errors: any = {};
-    //   if (!values.email) {
-    //     errors.email = "이메일을 입력해주세요.";
-    //   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) {
-    //     errors.email = "유효하지 않은 이메일 형식입니다.";
-    //   }
-
-    //   const pwRegex =
-    //     /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*()])[a-zA-Z\d!@#$%^&*()]{8,16}$/;
-    //   if (!values.password) {
-    //     errors.password = "비밀번호를 입력해주세요.";
-    //   } else if (!pwRegex.test(values.password)) {
-    //     errors.password =
-    //       "비밀번호는 8자 이상 16자이하의 대소문자, 숫자, 특수문자가 포함되어야 합니다.";
-    //   }
-
-    //   return errors;
-    // },
 
     onSubmit: async (values) => {
       //   console.log("Form submitted", values);
@@ -102,14 +135,16 @@ const SignupPage = () => {
         const res = await api.post("/user/register", values);
         if (res.status === 201) {
           alert("회원가입 완료");
+          router.push("/login");
         }
       } catch {
         console.log("실패");
       }
     },
   });
+  //   console.log(formik.isValid, "123123123123");
   return (
-    <SignupStyled>
+    <SignupStyled className={clsx("signup-wrap")}>
       <div>
         <h2>회원가입</h2>
         <form onSubmit={formik.handleSubmit}>
@@ -122,16 +157,25 @@ const SignupPage = () => {
             // onChange={formik.handleChange}
             onChange={(e) => {
               formik.handleChange(e); // (e) : event를 입력해줘야 onchange가 실행된다.
-              emailValidation(e.target.value, setEmailError); // 입력할 때마다 유효성 검사
+              emailValidation(e.target.value, setEmailError, setIsEmail); // 입력할 때마다 유효성 검사
+              //   setEmailDuplicate(""); // 중복 상태 메세지 초기화
             }}
             required
           />
-          <button>중복검사</button>
+          <button
+            type="button"
+            onClick={() => {
+              duplicateCheck(formik.values.email);
+            }}
+          >
+            중복확인
+          </button>
+
           {/* useformik validate */}
           {/* {formik.errors.email && <p>{formik.errors.email}</p>} */}
-
           {/* usestate errormessage */}
-          <p style={{ color: "red", fontSize: "11px" }}>{emailError}</p>
+
+          <p className="error-message">{emailError || emailDuplicate}</p>
 
           {/* 비밀번호 */}
           <div>비밀번호</div>
@@ -142,12 +186,12 @@ const SignupPage = () => {
             // onChange={formik.handleChange}
             onChange={(e) => {
               formik.handleChange(e);
-              passValidation(e.target.value, setPassError); // 입력할 때마다 유효성 검사
+              passValidation(e.target.value, setPassError, setIsPassword); // 입력할 때마다 유효성 검사
             }}
             required
           />
           {/* {formik.errors.password && <p>{formik.errors.password}</p>} */}
-          <p style={{ color: "red", fontSize: "11px" }}>{passError}</p>
+          <p className="error-message">{passError}</p>
 
           {/* 비밀번호 확인 */}
           <div>비밀번호 확인</div>
@@ -160,13 +204,14 @@ const SignupPage = () => {
               passCheckValidation(
                 e.target.value,
                 formik.values.password,
-                setPassCheckError
+                setPassCheckError,
+                setIsPasswordCheck
               );
             }}
             required
           />
           {/* {formik.errors.passwordCheck && <p>{formik.errors.passwordCheck}</p>} */}
-          <p style={{ color: "red", fontSize: "11px" }}>{passCheckError}</p>
+          <p className="error-message">{passCheckError}</p>
 
           {/* 닉네임 */}
           <div>닉네임</div>
@@ -177,11 +222,25 @@ const SignupPage = () => {
             // onChange={formik.handleChange}
             onChange={(e) => {
               formik.handleChange(e);
-              nicknameValidation(e.target.value, setNicknameError);
+              nicknameValidation(
+                e.target.value,
+                setNicknameError,
+                setIsNickname
+              );
+              setNicknameDuplicate("");
             }}
             required
           />
-          <p style={{ color: "red", fontSize: "11px" }}>{nicknameError}</p>
+          <button
+            type="button"
+            onClick={() => {
+              duplicateCheck2(formik.values.nickname);
+            }}
+          >
+            중복확인
+          </button>
+
+          <p className="error-message">{nicknameError || nicknameDuplicate}</p>
 
           {/* 이름 */}
           <div>이름</div>
@@ -191,11 +250,11 @@ const SignupPage = () => {
             value={formik.values.name}
             onChange={(e) => {
               formik.handleChange(e);
-              nameValidation(e.target.value, setNameError);
+              nameValidation(e.target.value, setNameError, setIsName);
             }}
             required
           />
-          <p style={{ color: "red", fontSize: "11px" }}>{nameError}</p>
+          <p className="error-message">{nameError}</p>
 
           {/* 휴대폰 번호 */}
           <div>휴대폰 번호</div>
@@ -209,16 +268,29 @@ const SignupPage = () => {
             // }}
             onChange={(e) => {
               const formatted = formatPhone(e.target.value);
-              //   formik.handleChange(e);
-              formik.setFieldValue("phone", formatted); // 포맷된 값으로 폼 상태 업데이트
-              phoneValidation(formatted, setPhoneError);
+              //   formik.handleChange(e); // 입력값을 가공하지 않고, 그대로 저장할 때 사용
+              formik.setFieldValue("phone", formatted); // 포맷된 값으로 폼 상태 업데이트 // 가공된 값 입력에 필수, 직접 제어 가능
+              // "phone" → 폼 필드 이름 (name 속성 값)
+              phoneValidation(formatted, setPhoneError, setIsPhone);
+              //   setPhoneDuplicate("");
             }}
             required
             maxLength={13}
           />
-          <p style={{ color: "red", fontSize: "11px" }}>{phoneError}</p>
+          <button
+            type="button"
+            onClick={() => {
+              duplicateCheck3(formik.values.phone);
+            }}
+          >
+            중복확인
+          </button>
 
-          <button type="submit">회원가입</button>
+          <p className="error-message">{phoneError || phoneDuplicate}</p>
+
+          <button type="submit" disabled={!isValid}>
+            회원가입
+          </button>
         </form>
       </div>
     </SignupStyled>
