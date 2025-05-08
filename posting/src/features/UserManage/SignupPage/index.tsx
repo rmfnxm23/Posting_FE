@@ -39,15 +39,19 @@ const SignupPage = () => {
   const [nicknameDuplicate, setNicknameDuplicate] = useState("");
   const [phoneDuplicate, setPhoneDuplicate] = useState("");
 
+  // 중복 검사 boolean 상태
+  const [isEmailDuplicate, setIsEmailDuplicate] = useState(false);
+  const [isNicknameDuplicate, setIsNicknameDuplicate] = useState(false);
+  const [isPhoneDuplicate, setIsPhoneDuplicate] = useState(false);
+
   //   중복확인 - 이메일
   const duplicateCheck = async (email: string) => {
     try {
       if (!email.trim()) {
         setEmailDuplicate("이메일을 입력해주세요."); // ✅ 메시지 출력
+        setIsEmailDuplicate(false);
         return;
       }
-
-      //   if (emailError) return;
 
       const res = await api.post(`/user/check/email`, { email });
 
@@ -55,9 +59,11 @@ const SignupPage = () => {
         console.log(res, "front");
         // setEmailError("이미 사용된 이메일입니다.");
         setEmailDuplicate("이미 사용된 이메일입니다.");
+        setIsEmailDuplicate(false);
       } else {
         // setEmailError("사용 가능한 이메일입니다.");
         setEmailDuplicate("사용 가능한 이메일입니다.");
+        setIsEmailDuplicate(true);
       }
     } catch (err) {
       console.error(err, "중복확인 실패");
@@ -69,6 +75,7 @@ const SignupPage = () => {
     try {
       if (!nickname.trim()) {
         setNicknameDuplicate("닉네임을 입력해주세요."); // ✅ 메시지 출력
+        setIsNicknameDuplicate(false);
         return;
       }
 
@@ -76,8 +83,10 @@ const SignupPage = () => {
       if (res.data.exist) {
         console.log(res, "front");
         setNicknameDuplicate("이미 사용된 닉네임입니다.");
+        setIsNicknameDuplicate(false);
       } else {
         setNicknameDuplicate("사용 가능한 닉네임입니다.");
+        setIsNicknameDuplicate(true);
       }
     } catch (err) {
       console.error(err, "중복확인 실패");
@@ -89,17 +98,18 @@ const SignupPage = () => {
     try {
       if (!phone.trim()) {
         setPhoneDuplicate("번호를 입력해주세요."); // ✅ 메시지 출력
+        setIsPhoneDuplicate(false);
         return;
       }
-      console.log(phone, "hooooooo");
 
       const res = await api.post(`/user/check/phone`, { phone });
 
       if (res.data.exist) {
-        console.log(res, "front");
         setPhoneDuplicate("이미 사용된 번호입니다.");
+        setIsPhoneDuplicate(false);
       } else {
         setPhoneDuplicate("사용 가능한 번호입니다.");
+        setIsPhoneDuplicate(true);
       }
     } catch (err) {
       console.error(err, "중복확인 실패");
@@ -108,7 +118,27 @@ const SignupPage = () => {
 
   //   비활성화 / 활성화 상태
   const isValid =
-    isEmail && isPassword && isPasswordCheck && isNickname && isname && isPhone; // 모든 form의 유효성이 false 일 때
+    isEmail &&
+    isPassword &&
+    isPasswordCheck &&
+    isNickname &&
+    isname &&
+    isPhone && // 모든 form의 유효성이 false 일 때
+    isEmailDuplicate &&
+    isNicknameDuplicate &&
+    isPhoneDuplicate; // 중복확인이 false 일 때
+
+  // console.log(isEmail, "isEmail");
+  // console.log(isPassword, "isPassword");
+  // console.log(isPasswordCheck, "isPasswordCheck");
+  // console.log(isNickname, "isNickname");
+  // console.log(isname, "isname");
+  // console.log(isPhone, "isPhone");
+  // console.log(isEmailDuplicate, "isEmailDuplicate");
+  // console.log(isNicknameDuplicate, "isNicknameDuplicate");
+  // console.log(isPhoneDuplicate, "isPhoneDuplicate");
+
+  // console.log(isValid, "비활성화? 활성화?");
 
   const formik = useFormik({
     initialValues: {
@@ -123,15 +153,7 @@ const SignupPage = () => {
     // validate,
 
     onSubmit: async (values) => {
-      //   console.log("Form submitted", values);
-      //   alert(JSON.stringify(values, null, 2));
-      //   actions.setSubmitting(false);
-
       try {
-        // const res = await axios.post(
-        //   "http://localhost:5000/user/register",
-        //   values
-        // );
         const res = await api.post("/user/register", values);
         if (res.status === 201) {
           alert("회원가입 완료");
@@ -142,39 +164,41 @@ const SignupPage = () => {
       }
     },
   });
-  //   console.log(formik.isValid, "123123123123");
+
   return (
     <SignupStyled className={clsx("signup-wrap")}>
-      <div>
+      <div className="signup-container">
         <h2>회원가입</h2>
         <form onSubmit={formik.handleSubmit}>
           {/* 아이디 (이메일) */}
           <div>아이디</div>
-          <input
-            type="email"
-            name="email"
-            value={formik.values.email}
-            // onChange={formik.handleChange}
-            onChange={(e) => {
-              formik.handleChange(e); // (e) : event를 입력해줘야 onchange가 실행된다.
-              emailValidation(e.target.value, setEmailError, setIsEmail); // 입력할 때마다 유효성 검사
-              //   setEmailDuplicate(""); // 중복 상태 메세지 초기화
-            }}
-            required
-          />
-          <button
-            type="button"
-            onClick={() => {
-              duplicateCheck(formik.values.email);
-            }}
-          >
-            중복확인
-          </button>
+          <div style={{ display: "flex" }}>
+            <input
+              type="email"
+              name="email"
+              value={formik.values.email}
+              onChange={(e) => {
+                formik.handleChange(e); // (e) : event를 입력해줘야 onchange가 실행된다.
+                emailValidation(e.target.value, setEmailError, setIsEmail); // 입력할 때마다 유효성 검사
+                setEmailDuplicate(""); // 중복 상태 메세지 초기화
+              }}
+              required
+            />
+            <button
+              type="button"
+              onClick={() => {
+                duplicateCheck(formik.values.email);
+              }}
+              className="duplicate-btn"
+            >
+              중복확인
+            </button>
+          </div>
 
           {/* useformik validate */}
           {/* {formik.errors.email && <p>{formik.errors.email}</p>} */}
-          {/* usestate errormessage */}
 
+          {/* usestate errormessage */}
           <p className="error-message">{emailError || emailDuplicate}</p>
 
           {/* 비밀번호 */}
@@ -183,7 +207,6 @@ const SignupPage = () => {
             type="password"
             name="password"
             value={formik.values.password}
-            // onChange={formik.handleChange}
             onChange={(e) => {
               formik.handleChange(e);
               passValidation(e.target.value, setPassError, setIsPassword); // 입력할 때마다 유효성 검사
@@ -215,30 +238,32 @@ const SignupPage = () => {
 
           {/* 닉네임 */}
           <div>닉네임</div>
-          <input
-            type="text"
-            name="nickname"
-            value={formik.values.nickname}
-            // onChange={formik.handleChange}
-            onChange={(e) => {
-              formik.handleChange(e);
-              nicknameValidation(
-                e.target.value,
-                setNicknameError,
-                setIsNickname
-              );
-              setNicknameDuplicate("");
-            }}
-            required
-          />
-          <button
-            type="button"
-            onClick={() => {
-              duplicateCheck2(formik.values.nickname);
-            }}
-          >
-            중복확인
-          </button>
+          <div style={{ display: "flex" }}>
+            <input
+              type="text"
+              name="nickname"
+              value={formik.values.nickname}
+              onChange={(e) => {
+                formik.handleChange(e);
+                nicknameValidation(
+                  e.target.value,
+                  setNicknameError,
+                  setIsNickname
+                );
+                setNicknameDuplicate("");
+              }}
+              required
+            />
+            <button
+              type="button"
+              onClick={() => {
+                duplicateCheck2(formik.values.nickname);
+              }}
+              className="duplicate-btn"
+            >
+              중복확인
+            </button>
+          </div>
 
           <p className="error-message">{nicknameError || nicknameDuplicate}</p>
 
@@ -258,37 +283,36 @@ const SignupPage = () => {
 
           {/* 휴대폰 번호 */}
           <div>휴대폰 번호</div>
-          <input
-            type="text"
-            name="phone"
-            value={formik.values.phone}
-            // onChange={(e) => {
-            //   formik.handleChange(e);
-            //   phoneValidation(e.target.value, setPhoneError);
-            // }}
-            onChange={(e) => {
-              const formatted = formatPhone(e.target.value);
-              //   formik.handleChange(e); // 입력값을 가공하지 않고, 그대로 저장할 때 사용
-              formik.setFieldValue("phone", formatted); // 포맷된 값으로 폼 상태 업데이트 // 가공된 값 입력에 필수, 직접 제어 가능
-              // "phone" → 폼 필드 이름 (name 속성 값)
-              phoneValidation(formatted, setPhoneError, setIsPhone);
-              //   setPhoneDuplicate("");
-            }}
-            required
-            maxLength={13}
-          />
-          <button
-            type="button"
-            onClick={() => {
-              duplicateCheck3(formik.values.phone);
-            }}
-          >
-            중복확인
-          </button>
+          <div style={{ display: "flex" }}>
+            <input
+              type="text"
+              name="phone"
+              value={formik.values.phone}
+              onChange={(e) => {
+                const formatted = formatPhone(e.target.value);
+                //   formik.handleChange(e); // 입력값을 가공하지 않고, 그대로 저장할 때 사용
+                formik.setFieldValue("phone", formatted); // 포맷된 값으로 폼 상태 업데이트 // 가공된 값 입력에 필수, 직접 제어 가능
+                // "phone" → 폼 필드 이름 (name 속성 값)
+                phoneValidation(formatted, setPhoneError, setIsPhone);
+                setPhoneDuplicate(""); // 중복 확인 메세지 초기화
+              }}
+              required
+              maxLength={13}
+            />
+            <button
+              type="button"
+              onClick={() => {
+                duplicateCheck3(formik.values.phone);
+              }}
+              className="duplicate-btn"
+            >
+              중복확인
+            </button>
+          </div>
 
           <p className="error-message">{phoneError || phoneDuplicate}</p>
 
-          <button type="submit" disabled={!isValid}>
+          <button type="submit" disabled={!isValid} className="signup-submit">
             회원가입
           </button>
         </form>
