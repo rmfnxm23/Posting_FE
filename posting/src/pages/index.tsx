@@ -1,9 +1,9 @@
-import SignupPage from "@/features/UserManage/SignupPage";
+import MainPage from "@/features/MainPage";
 
 export default function Home() {
   return (
     <>
-      <SignupPage />
+      <MainPage />
     </>
   );
 }
