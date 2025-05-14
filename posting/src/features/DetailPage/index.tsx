@@ -12,7 +12,16 @@ interface PostProps {
   createdAt?: string;
   //   updatedAt?: string;
   categoryId: number;
+  Category: {
+    id: number;
+    category: string;
+  };
   userId: number;
+  // User: {
+  user: {
+    id: number;
+    nickname: string;
+  };
 }
 
 const DetailPage = () => {
@@ -40,6 +49,7 @@ const DetailPage = () => {
 
         const data = res.data.data;
         console.log(data, "data");
+        // console.log(data.User.nickname);
         setData(data);
       } catch (err) {
         console.error(err);
@@ -74,7 +84,13 @@ const DetailPage = () => {
         <div>제목: {data.title}</div>
         <div>내용: {data.content}</div>
         <div>작성한 날짜: {data.createdAt}</div>
-        <div>카테고리: {data.categoryId}</div>
+        <div>{/* 작성자ID: {data.userId}, 작성자: {data.User.nickname} */}</div>
+        <div>
+          작성자ID: {data.userId}, 작성자: {data.user.nickname}
+        </div>
+        <div>
+          카테고리ID: {data.categoryId}, 카테고리: {data.Category.category}
+        </div>
         {loginUser.id === data.userId ? (
           <div>
             <button
