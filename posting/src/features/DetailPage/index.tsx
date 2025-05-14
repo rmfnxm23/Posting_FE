@@ -1,14 +1,18 @@
 import api from "@/util/api";
 import { useRouter } from "next/router";
+import { access } from "node:fs";
 import { useEffect, useState } from "react";
+import Cookies from "js-cookie";
+import { useDispatch, useSelector } from "react-redux";
 
 interface PostProps {
   id: number;
   title?: string;
   content?: string;
-  //   createdAT?: string;
+  createdAt?: string;
   //   updatedAt?: string;
-  //   categoryId: number;
+  categoryId: number;
+  userId: number;
 }
 
 const DetailPage = () => {
@@ -16,9 +20,13 @@ const DetailPage = () => {
   const { query } = router;
   const { id } = router.query;
 
+  const dispatch = useDispatch();
+  const loginUser = useSelector((state: any) => state.user);
+
   //   const [data, setData] = useState<[]>([]);
   //   const [data, setData] = useState<PostProps[]>([]);
   const [data, setData] = useState<PostProps>();
+  //   const [data, setData] = useState<PostProps | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -42,6 +50,12 @@ const DetailPage = () => {
 
   if (!data) return <div>Loading....</div>;
 
+  // // 유저 검증
+  // const userCheck = () => {
+  //   const token = Cookies.get("accessToken");
+  // };
+
+  // 삭제 버튼
   const deletePost = async (id: any) => {
     try {
       const res = await api.delete(`/post/delete/${id}`);
@@ -57,10 +71,40 @@ const DetailPage = () => {
   return (
     <>
       <div>
-        <div>{data.title}</div>
-        <div>{data.content}</div>
-        <button>수정</button>
-        <button onClick={deletePost}>삭제</button>
+        <div>제목: {data.title}</div>
+        <div>내용: {data.content}</div>
+        <div>작성한 날짜: {data.createdAt}</div>
+        <div>카테고리: {data.categoryId}</div>
+        {loginUser.id === data.userId ? (
+          <div>
+            <button
+              onClick={() => {
+                router.push(`/updating/${id}`);
+              }}
+              style={{ cursor: "pointer" }}
+            >
+              수정
+            </button>
+            <button
+              onClick={() => {
+                deletePost(id);
+              }}
+              style={{ cursor: "pointer" }}
+            >
+              삭제
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => {
+              router.push("/");
+            }}
+            style={{ cursor: "pointer", padding: 5 }}
+          >
+            홈
+          </button>
+        )}
       </div>
     </>
   );

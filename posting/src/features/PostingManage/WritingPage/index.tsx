@@ -4,7 +4,8 @@ import { useFormik } from "formik";
 import api from "@/util/api";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { Select } from "antd";
+import { message, Select } from "antd";
+import { useDispatch, useSelector } from "react-redux";
 
 interface props {
   id: number;
@@ -13,10 +14,25 @@ interface props {
 
 const WritingPage = () => {
   const router = useRouter();
+  const dispatch = useDispatch();
+  const loginUser = useSelector((state: any) => state.user);
+  console.log(loginUser, "writingpage");
+
+  const [messageApi, contextHolder] = message.useMessage();
 
   const [categories, setCategories] = useState<props[]>([]); // 카테고리 저장
 
-  //   const [selected, setSelected] = useState(""); // 선택된 카테고리
+  useEffect(() => {
+    if (!loginUser.id) {
+      alert("로그인이 필요합니다.");
+      // messageApi.open({
+      //   type: "warning",
+      //   content: "로그인이 필요합니다.",
+      // });
+
+      router.push("/login");
+    }
+  }, []);
 
   // 리액트의 생명주기 : 컴포넌트가 랜더링이 시작되는 지점부터 끝나는 지점을 말함
   // useEffect(function, deps)
@@ -77,10 +93,12 @@ const WritingPage = () => {
       if (title === "" || content === "" || !categoryId) {
         return alert("입력해주세요");
       }
+
       const data = {
         title,
         content,
         categoryId: Number(categoryId),
+        userId: loginUser.id, // 로그인한 유저의 id를 함께 보냄
       };
       console.log(data);
       try {
@@ -141,7 +159,9 @@ const WritingPage = () => {
             value={formik.values.content}
             onChange={formik.handleChange}
           />
-          <button type="submit">저장</button>
+          <button type="submit" style={{ cursor: "pointer" }}>
+            저장
+          </button>
         </form>
       </div>
     </WritingStyled>
