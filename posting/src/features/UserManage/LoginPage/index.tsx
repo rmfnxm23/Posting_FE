@@ -7,9 +7,12 @@ import { useState } from "react";
 import { LoginStyled } from "./styled";
 import clsx from "clsx";
 // import { Input } from "antd";
+import { useDispatch } from "react-redux";
+import { loginAction } from "@/store/userSlice";
 
 const LoginPage = () => {
   const router = useRouter();
+  const dispatch = useDispatch();
 
   const [loginError, setLoginError] = useState("");
 
@@ -36,12 +39,28 @@ const LoginPage = () => {
         }
 
         if (res.data.token) {
-          console.log(res.data.token);
+          // console.log(res.data.token);
+          // console.log(res.data, "-------------------");
+          console.log("userdata", res.data.user);
+          console.log(res.data.user.email);
+          dispatch(loginAction(res.data.user)); // res로 받아온 정보를 loginAction에 할당하여 redux 저장
+
+          // dispatch(
+          //   loginAction({
+          //     id: res.data.user.id,
+          //     email: res.data.user.email,
+          //     nickname: res.data.user.nickname,
+          //     name: res.data.user.name,
+          //     phone: res.data.user.phone,
+          //   })
+          // );
+
+          console.log(dispatch);
           const accessToken = res.data.token;
 
           // 토큰을 쿠키에 저장
           Cookies.set("accessToken", accessToken, {
-            expires: 7, // 쿠키 만료일 (일 단위)
+            expires: 1, // 쿠키 만료일 (일 단위)
             // path: "/", // 쿠키가 적용될 경로 (기본값은 현재 웹사이트 경로)
             // secure: true, // HTTPS 통신 시에만 쿠키가 전송됨
             // httpOnly: true, // 자바스크립트로 접근할 수 없도록 설정 // 쿠키 저장 안됨
@@ -71,14 +90,7 @@ const LoginPage = () => {
       <div className="login-container">
         <h2>로그인</h2>
         <form onSubmit={formik.handleSubmit} className="form-box">
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              width: 300,
-              gap: 10,
-            }}
-          >
+          <div>
             <input
               type="email"
               name="email"
@@ -110,6 +122,7 @@ const LoginPage = () => {
                   onClick={() => {
                     router.push("/find/id");
                   }}
+                  style={{ cursor: "pointer" }}
                 >
                   id찾기
                 </span>
@@ -118,12 +131,15 @@ const LoginPage = () => {
                   onClick={() => {
                     router.push("/find/pw");
                   }}
+                  style={{ cursor: "pointer" }}
                 >
                   pw찾기
                 </span>
               </div>
             </div>
-            <button type="submit">로그인</button>
+            <button type="submit" style={{ cursor: "pointer" }}>
+              로그인
+            </button>
             <p style={{ color: "red", fontSize: 12 }}>{loginError}</p>
 
             <div
@@ -139,6 +155,7 @@ const LoginPage = () => {
                 onClick={() => {
                   router.push("/signup");
                 }}
+                style={{ cursor: "pointer" }}
               >
                 회원가입
               </p>
