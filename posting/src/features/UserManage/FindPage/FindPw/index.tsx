@@ -4,8 +4,11 @@ import { useFormik } from "formik";
 import { useState } from "react";
 import { FindPwStyled } from "./styled";
 import clsx from "clsx";
+import { useRouter } from "next/router";
 
 const FindPwPage = () => {
+  const router = useRouter();
+
   const [userEmail, setUserEmail] = useState(); // 조회한 이메일
   const [notFound, setNotFound] = useState(""); // 등록된 이메일이 없을 때 메세지 관리
 
@@ -23,9 +26,10 @@ const FindPwPage = () => {
     },
     onSubmit: async (values) => {
       const email = values.email;
+      console.log(email);
       try {
         const res = await api.post("/user/find/pw", { email });
-
+        console.log(res);
         if (res.data.Message) {
           return setNotFound(res.data.Message);
         }
@@ -63,12 +67,15 @@ const FindPwPage = () => {
         // return;
         if (res.data.success === "true") {
           alert("goal!!!!!!!!!!!!");
+          router.push("/login");
         }
       } catch (err) {
         console.error(err);
       }
     },
   });
+
+  const isValid = isPassword && isPasswordCheck;
   return (
     <FindPwStyled className={clsx("findpw-wrap")}>
       <div className="findpw-container">
@@ -80,7 +87,9 @@ const FindPwPage = () => {
             value={formik.values.email}
             onChange={formik.handleChange}
           />
-          <button>찾기</button>
+          <button type="submit" style={{ cursor: "pointer" }}>
+            찾기
+          </button>
         </form>
         {userEmail ? (
           <div>
@@ -99,7 +108,12 @@ const FindPwPage = () => {
                 required
               />
               {/* {formik.errors.password && <p>{formik.errors.password}</p>} */}
-              <p className="error-message">{passError}</p>
+              <p
+                className="error-message"
+                style={{ color: "red", fontSize: 12 }}
+              >
+                {passError}
+              </p>
 
               {/* 비밀번호 확인 */}
 
@@ -119,9 +133,20 @@ const FindPwPage = () => {
                 placeholder="새 비밀번호 확인"
                 required
               />
-              <p className="error-message">{passCheckError}</p>
+              <p
+                className="error-message"
+                style={{ color: "red", fontSize: 12 }}
+              >
+                {passCheckError}
+              </p>
 
-              <button>변경하기</button>
+              <button
+                type="submit"
+                disabled={!isValid}
+                style={{ cursor: "pointer" }}
+              >
+                변경하기
+              </button>
             </form>
           </div>
         ) : (

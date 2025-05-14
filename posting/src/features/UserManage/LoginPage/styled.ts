@@ -18,18 +18,24 @@ export const LoginStyled = styled.div`
       /* justify-content: center; */
       align-items: center;
       padding: 20px;
+      width: 100%;
+      max-width: 416px;
+      margin: auto;
 
       h2 {
         margin-bottom: 10px;
       }
 
       form {
-        /* width: 100%; */
+        width: 100%;
         display: flex;
         flex-direction: column;
+        align-items: center;
 
         input,
         button {
+          width: 100%;
+          margin-right: 8px;
           padding: 15px;
           border: 1.5px solid #e7e7e9;
           border-radius: 5px;

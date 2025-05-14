@@ -73,7 +73,9 @@ const FindIdPage = () => {
             }}
             maxLength={13}
           />
-          <button type="submit">아이디 찾기</button>
+          <button type="submit" style={{ cursor: "pointer" }}>
+            아이디 찾기
+          </button>
           {findId ? (
             <div>
               아이디는 <strong>{findId}</strong>입니다.

@@ -190,6 +190,7 @@ const SignupPage = () => {
                 duplicateCheck(formik.values.email);
               }}
               className="duplicate-btn"
+              style={{ cursor: "pointer" }}
             >
               중복확인
             </button>
@@ -260,6 +261,7 @@ const SignupPage = () => {
                 duplicateCheck2(formik.values.nickname);
               }}
               className="duplicate-btn"
+              style={{ cursor: "pointer" }}
             >
               중복확인
             </button>
@@ -305,6 +307,7 @@ const SignupPage = () => {
                 duplicateCheck3(formik.values.phone);
               }}
               className="duplicate-btn"
+              style={{ cursor: "pointer" }}
             >
               중복확인
             </button>
